@@ -10,25 +10,31 @@ import java.util.logging.Logger;
 
 public class FileClient {
     private static final Logger LOGGER = Logger.getLogger(FileClient.class.getName());
-
     private static final String SERVER_ADDRESS = "localhost";
     private static final int PORT = 12345;
 
     public static void main(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: java FileClient <UPLOAD/DOWNLOAD> <file-path> [destination-path]");
+            return;
+        }
+
+        String command = args[0].toUpperCase();
+        String filePath = args[1];
+        String destinationPath = (args.length > 2) ? args[2] : "";
+
         try (Socket socket = new Socket(SERVER_ADDRESS, PORT);
              DataInputStream dis = new DataInputStream(socket.getInputStream());
              DataOutputStream dos = new DataOutputStream(socket.getOutputStream())) {
 
             LOGGER.info("Connected to server: " + SERVER_ADDRESS + " on port: " + PORT);
-
-            String command = "UPLOAD"; // or "DOWNLOAD"
             dos.writeUTF(command);
             LOGGER.info("Sent command: " + command + " to server");
 
-            if ("UPLOAD".equalsIgnoreCase(command)) {
-                uploadFile(dos);
-            } else if ("DOWNLOAD".equalsIgnoreCase(command)) {
-                downloadFile(dis, dos);
+            if ("UPLOAD".equals(command)) {
+                uploadFile(dos, filePath);
+            } else if ("DOWNLOAD".equals(command)) {
+                downloadFile(dis, dos, filePath, destinationPath);
             } else {
                 LOGGER.warning("Unknown command");
             }
@@ -38,8 +44,7 @@ public class FileClient {
         }
     }
 
-    private static void uploadFile(DataOutputStream dos) throws IOException {
-        String filePath = "example.txt"; // Replace with actual file name
+    private static void uploadFile(DataOutputStream dos, String filePath) throws IOException {
         File file = new File(filePath);
         if (!file.exists() || file.isDirectory()) {
             LOGGER.warning("File not found or is a directory: " + filePath);
@@ -47,7 +52,6 @@ public class FileClient {
         }
 
         LOGGER.info("Preparing to upload file: " + filePath + " of size: " + file.length() + " bytes");
-
         dos.writeUTF(file.getName());
         dos.writeLong(file.length());
 
@@ -63,8 +67,7 @@ public class FileClient {
         LOGGER.info("File " + filePath + " uploaded successfully.");
     }
 
-    private static void downloadFile(DataInputStream dis, DataOutputStream dos) throws IOException {
-        String fileName = "example.txt"; // Replace with actual file name
+    private static void downloadFile(DataInputStream dis, DataOutputStream dos, String fileName, String destinationPath) throws IOException {
         dos.writeUTF(fileName);
         LOGGER.info("Requested download for file: " + fileName);
 
@@ -73,7 +76,11 @@ public class FileClient {
             long fileSize = dis.readLong();
             LOGGER.info("Downloading file: " + fileName + " of size: " + fileSize + " bytes");
 
-            try (FileOutputStream fos = new FileOutputStream(fileName)) {
+            if (destinationPath.isEmpty()) {
+                destinationPath = fileName;  // Default to current directory
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(destinationPath)) {
                 byte[] buffer = new byte[4096];
                 int read;
                 long totalRead = 0;
@@ -84,7 +91,7 @@ public class FileClient {
                 }
             }
 
-            LOGGER.info("File " + fileName + " downloaded successfully. Total bytes read: " + fileSize);
+            LOGGER.info("File " + fileName + " downloaded successfully to " + destinationPath + ". Total bytes read: " + fileSize);
         } else {
             LOGGER.warning("File not found on the server.");
         }

@@ -29,8 +29,8 @@ This is a simple file transfer application written in Java 21 that allows users 
 Ensure you have Java 21 installed. Compile the Java files using the following commands:
 
 ```bash
-javac FileServer.java
-javac FileClient.java
+mkdir out
+javac -d out src/FileServer.java src/FileClient.java
 ```
 
 ### 2. Run the Server
@@ -38,15 +38,15 @@ You can run the server either directly on your machine or inside a Docker contai
 
 Running Directly
 ```bash
-java FileServer
+java -cp out FileServer
 ```
 Running with Docker
- 
+
 1. Build the Docker image:
 ```bash
 docker build -t file-server .
 ```
-2. Build the Docker image:
+2. Run the Docker container:
 ```bash
 docker run -p 12345:12345 file-server
 ```
@@ -56,15 +56,14 @@ You can run the client to either upload or download files.
 
 Upload a File:
 ```bash
-java FileClient
+java -cp out FileClient UPLOAD C:/path/to/your/file.txt
 ```
-Modify the FileClient.java to set the command variable to "UPLOAD" and specify the file you want to upload.
 
 Download a File:
 ```bash
-java FileClient
+java -cp out FileClient DOWNLOAD file name C:/path/to/save/location/
 ```
-Modify the FileClient.java to set the command variable to "DOWNLOAD" and specify the file you want to download.
+** you need to have permission to write and read in this directory
 
 ## Logs and Monitoring
 
@@ -77,14 +76,13 @@ docker run -p 12345:12345 file-server
 ```
 
 ### 2. Run the client to upload a file:
-Modify FileClient.java to set the command to "UPLOAD" and specify the file name. Then run:
 ```bash
-java FileClient
+java -cp out FileClient UPLOAD C:/Users/vivianne.miranda/Downloads/sample2.txt
 ```
 ### 3. Run the client to download a file:
-Modify FileClient.java to set the command to "DOWNLOAD" and specify the file name. Then run:
+
 ```bash
-java FileClient
+java -cp out FileClient DOWNLOAD sample2.txt C:/path/to/save/location/
 ```
 
 ## Troubleshooting

@@ -1,14 +1,14 @@
-# Use an official OpenJDK 21 runtime as a parent image
+# Use an official Amazon Corretto 21 runtime as a parent image
 FROM amazoncorretto:21
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /src
 
-# Copy the compiled Java program to the container
-COPY FileServer.java /src/FileServer.java
+# Copy the Java source files to the container
+COPY src/FileServer.java /src/
 
 # Compile the Java program
 RUN javac FileServer.java
 
-# Run the Java program
+# Run the compiled Java program
 CMD ["java", "FileServer"]
